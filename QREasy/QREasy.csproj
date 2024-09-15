@@ -10,4 +10,8 @@
     <ProjectReference Include="..\QREasy.Services\QREasy.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
 </Project>
