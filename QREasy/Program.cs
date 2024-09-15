@@ -1,7 +1,11 @@
+using QREasy.Services;
+using QREasy.Services.Interface;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<ICreateQrService, CreateQrService>();
 
 var app = builder.Build();
 

@@ -1,0 +1,122 @@
+﻿<section class="wrapper">
+    <div id="stars"></div>
+    <div id="stars2"></div>
+</section>
+
+<div class="main">
+    <header class="header">
+        <div class="logo">
+            <span class="logo-span">QREasy</span>
+        </div>
+
+        <nav class="nav">
+            <ul>
+                <li><a href="#">Contact With Us</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <section class="left-section">
+            <span class="welcome">Welcome to QREasy</span>
+            <input type="text" id="link-input" class="link-input" placeholder="Enter your link" />
+            <button class="button" id="create-btn">Create your QR code</button>
+            <button class="button" id="download-btn" disabled>Download your QR code</button>
+            <span class="rights">All rights reserved</span>
+        </section>
+
+        <section class="qr-section">
+            <div class="qr-container">
+                <img class="qr" id="qr-image" src="" alt="QR Code"/>
+                <span class="placeholder-text" id="placeholder-text">QR Code will be here!</span>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        let currentFileName = '';
+        $('#download-btn').hide();
+
+        $('#create-btn').on('click', function () {
+            $('#qr-image').hide();
+            $('#qr-image').attr('src', "");
+
+            var link = $('#link-input').val();
+            if (link) {
+                // Mevcut QR kodunu sil
+                if (currentFileName) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteQrImage", "CreateQr")',
+                        type: 'POST',
+                        data: { fileName: currentFileName },
+                        success: function () {
+                            // QR kodu silindi, şimdi yeni QR kodunu oluştur
+                            $.ajax({
+                                url: '@Url.Action("CreateQrImage", "CreateQr")',
+                                type: 'POST',
+                                data: { link: link },
+                                success: function (response) {
+                                    if (response.qrCodeUrl) {
+                                        // QR kodunun URL'sini ayarla
+                                        $('#qr-image').attr('src', response.qrCodeUrl);
+                                        $('#qr-image').show(); // QR kodunu göster
+                                        $('#placeholder-text').hide(); // Placeholder metni gizle
+                                        $('#download-btn').show();
+                                        $('#download-btn').prop('disabled', false); // Download butonunu aktif et
+
+                                        // Mevcut dosya adını güncelle
+                                        currentFileName = response.fileName;
+                                    }
+                                },
+                                error: function (xhr, status, error) {
+                                    alert("Bir hata oluştu: " + error);
+                                }
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            alert("QR kodu silinirken bir hata oluştu: " + error);
+                        }
+                    });
+                } else {
+                    // QR kodu silinecek dosya adı yok, yeni QR kodunu oluştur
+                    $.ajax({
+                        url: '@Url.Action("CreateQrImage", "CreateQr")',
+                        type: 'POST',
+                        data: { link: link },
+                        success: function (response) {
+                            if (response.qrCodeUrl) {
+                                // QR kodunun URL'sini ayarla
+                                $('#qr-image').attr('src', response.qrCodeUrl);
+                                $('#qr-image').show(); // QR kodunu göster
+                                $('#placeholder-text').hide(); // Placeholder metni gizle
+                                $('#download-btn').show();
+                                $('#download-btn').prop('disabled', false); // Download butonunu aktif et
+
+                                // Mevcut dosya adını güncelle
+                                currentFileName = response.fileName;
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            alert("Bir hata oluştu: " + error);
+                        }
+                    });
+                }
+            } else {
+                alert("Lütfen bir link giriniz.");
+            }
+        });
+
+        $('#download-btn').on('click', function () {
+            var qrImageUrl = $('#qr-image').attr('src');
+            if (qrImageUrl) {
+                var a = document.createElement('a');
+                a.href = qrImageUrl;
+                a.download = 'QRCode.png';
+                a.click();
+            }
+        });
+    });
+</script>
